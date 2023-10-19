@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <string.h>
 
 int main(void) {
     int client = socket(AF_INET, SOCK_STREAM, 0);
@@ -19,4 +20,14 @@ int main(void) {
     char buff[255];
     recv(client, buff, sizeof buff, 0);
     printf("Recieved message from server: %s\n", buff);
+
+    char message[255];
+    while (1) {
+        printf("Send a message to the server: ");
+        fgets(message, sizeof message, stdin);
+        send(client, message, strlen(message), 0);
+        if (strcmp(message, "done\n") == 0)
+            break;
+        memset(message, 0, sizeof message);
+    }
 }
