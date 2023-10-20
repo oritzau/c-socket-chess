@@ -3,17 +3,26 @@
 
 #include <stdint.h>
 enum PieceKind {
-    Pawn = 0,
-    Knight = 1,
-    Bishop = 2,
-    Rook = 3,
-    Queen = 4,
-    King = 5,
+    PAWN = 0,
+    KNIGHT = 1,
+    BISHOP = 2,
+    ROOK = 3,
+    QUEEN = 4,
+    KING = 5,
+};
+
+enum PieceColor {
+    WHITE = 0,
+    BLACK = 1,
 };
 
 typedef struct Piece {
-    uint8_t color;
+    enum PieceColor color;
     enum PieceKind kind;
 } Piece;
+
+typedef struct Move {
+} Move;
+
 
 #endif

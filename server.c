@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <string.h>
 #include <arpa/inet.h>
+#include <unistd.h>
 
 int main(void) {
     int server = socket(AF_INET, SOCK_STREAM, 0);
@@ -33,21 +34,27 @@ int main(void) {
     send(client2, servermsg, sizeof servermsg, 0);
 
     int current_client;
-
+    int other_client;
 
     char buff[255];
     int i = 0;
     char message[255];
     while (i < 20) {
-        sprintf(message, "Your turn, client %d: ", i %2);
+        sprintf(message, "Your turn, client %d: ", i % 2);
         current_client = (i % 2 == 0) ? client1 : client2;
+        other_client = (current_client == client1) ? client2 : client1;
         send(current_client, message, sizeof message, 0);
         recv(current_client, buff, sizeof buff, 0);
         printf("Message from client: %s", buff);
-        if (strcmp(buff, "done\n") == 0)
+        if (strcmp(buff, "done\n") == 0) {
+            sprintf(message, "Connection closed by client %d\n", (i % 2) + 1);
+            send(other_client, message, sizeof message, 0);
+            close(current_client);
+            close(other_client);
             break;
+        }
         memset(buff, 0, sizeof buff);
-        memset(message, 0, sizeof message);
+        // memset(message, 0, sizeof message);
         i++;
     }
 }
