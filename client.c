@@ -34,7 +34,7 @@ int main(int argc, char ** argv) {
     while (1) {
         recv(client, buffer, sizeof buff, 0);
         printf("%s", buffer);
-        printf("Send a message to the server: ");
+        // printf("Send a message to the server: ");
         fgets(message, sizeof message, stdin);
         send(client, message, strlen(message), 0);
         if (strcmp(message, "done\n") == 0)

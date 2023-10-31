@@ -7,14 +7,24 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 
-int main(void) {
+int main(int argc, char ** argv) {
+    if (argc != 2) {
+        printf("Usage: %s <port_number>\n", argv[0]);
+        return EXIT_FAILURE;
+    }
+    int portnumber = atoi(argv[1]);
+    if (portnumber < 9000) {
+        printf("Invalid port number: %d > 9000", portnumber);
+        return EXIT_FAILURE;
+    }
+
     int server = socket(AF_INET, SOCK_STREAM, 0);
-    char servermsg[255] = "Hello client!";
+    char servermsg[255] = "Hello player!";
 
     struct sockaddr_in servaddr;
 
     servaddr.sin_family = AF_INET;
-    servaddr.sin_port = htons(9001);
+    servaddr.sin_port = htons(portnumber);
     servaddr.sin_addr.s_addr = INADDR_ANY;
 
     if (bind(server, (struct sockaddr *)&servaddr, sizeof servaddr) != 0) {
@@ -22,39 +32,38 @@ int main(void) {
         return EXIT_FAILURE;
     }
 
-    printf("Server is hosting on Port: %d\n", ntohs(servaddr.sin_port));
+    printf("Server is hosting on port: %d\n", ntohs(servaddr.sin_port));
     if (listen(server, 2) != 0) {
         fprintf(stderr, "Listen failed!\n");
         return EXIT_FAILURE;
     }
 
-    int client1 = accept(server, NULL, NULL);
-    send(client1, servermsg, sizeof servermsg, 0);
-    int client2 = accept(server, NULL, NULL);
-    send(client2, servermsg, sizeof servermsg, 0);
+    int player1 = accept(server, NULL, NULL);
+    send(player1, servermsg, sizeof servermsg, 0);
+    int player2 = accept(server, NULL, NULL);
+    send(player2, servermsg, sizeof servermsg, 0);
 
-    int current_client;
-    int other_client;
+    int current_player;
+    int other_player;
 
-    char buff[255];
-    int i = 0;
-    char message[255];
-    while (i < 20) {
-        sprintf(message, "Your turn, client %d: ", i % 2);
-        current_client = (i % 2 == 0) ? client1 : client2;
-        other_client = (current_client == client1) ? client2 : client1;
-        send(current_client, message, sizeof message, 0);
-        recv(current_client, buff, sizeof buff, 0);
-        printf("Message from client: %s", buff);
-        if (strcmp(buff, "done\n") == 0) {
-            sprintf(message, "Connection closed by client %d\n", (i % 2) + 1);
-            send(other_client, message, sizeof message, 0);
-            close(current_client);
-            close(other_client);
+    char recv_buffer[255];
+    int turn_count = 0;
+    char send_buffer[255];
+    while (turn_count < 200) {
+        sprintf(send_buffer, "Your turn, player %d: ", (turn_count % 2) + 1);
+        current_player = (turn_count % 2 == 0) ? player1 : player2;
+        other_player = (current_player == player1) ? player2 : player1;
+        send(current_player, send_buffer, sizeof send_buffer, 0);
+        recv(current_player, recv_buffer, sizeof recv_buffer, 0);
+        if (strcmp(recv_buffer, "done\n") == 0) {
+            sprintf(send_buffer, "Connection closed by player %d\n", (turn_count % 2) + 1);
+            send(other_player, send_buffer, sizeof send_buffer, 0);
+            close(current_player);
+            close(other_player);
             break;
         }
-        memset(buff, 0, sizeof buff);
+        memset(recv_buffer, 0, sizeof recv_buffer);
         // memset(message, 0, sizeof message);
-        i++;
+        turn_count++;
     }
 }
