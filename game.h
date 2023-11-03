@@ -38,6 +38,9 @@ Piece * piece_new(PieceColor color, PieceKind kind);
 Move move_new(Piece * piece, unsigned char target_index, Board board);
 
 void board_print(Board board);
+Piece * board_index_by_row_col(int row, int col);
+char * tile_index_to_name(int index);
+int tile_name_to_index(char * tile_name);
 int get_piece_index(Piece ** piece, Board board);
 
 int piece_can_move(Piece ** piece, int target_index, Board board);
