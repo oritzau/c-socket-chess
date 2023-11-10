@@ -30,6 +30,11 @@ MU_TEST(test_index_to_tile_nameD2) {
     mu_assert_string_eq("D2", name);
 }
 
+MU_TEST(test_get_by_row_col) {
+    board[tile_name_to_index("E2")] = piece_new(WHITE, QUEEN);
+    mu_assert(board_index_by_row_col(board, 1, 4) != NULL, "board at 1, 4 (e2) should have a queen on it");
+}
+
 // pawn tests
 MU_TEST(test_white_pawn_move1turn1) {
     board[tile_name_to_index("E2")] = piece_new(WHITE, PAWN);
@@ -138,12 +143,108 @@ MU_TEST(test_knight_move_over_pieces_attacking_wrong_color) {
     mu_assert(!can_move, "Knight should NOT be able to move G1->F3 taking the white pawn on F3, over the black queen on G2");
 }
 
+// moving in first quadrant
+MU_TEST(bishop_can_move_diagonal_q1) {
+    board[tile_name_to_index("E2")] = piece_new(WHITE, BISHOP);
+    int can_move = piece_can_move(
+        &board[tile_name_to_index("E2")], 
+        tile_name_to_index("G4"), 
+        board
+    );
+    mu_assert(can_move, "Bishop should be able to move E2->G4");
+}
+
+MU_TEST(bishop_can_move_diagonal_q2) {
+    board[tile_name_to_index("C5")] = piece_new(WHITE, BISHOP);
+    int can_move = piece_can_move(
+        &board[tile_name_to_index("C5")], 
+        tile_name_to_index("A7"), 
+        board
+    );
+    mu_assert(can_move, "Bishop should be able to move C5->A7");
+}
+
+MU_TEST(bishop_can_move_diagonal_q3) {
+    board[tile_name_to_index("D5")] = piece_new(WHITE, BISHOP);
+    int can_move = piece_can_move(
+        &board[tile_name_to_index("D5")], 
+        tile_name_to_index("A2"), 
+        board
+    );
+    mu_assert(can_move, "Bishop should be able to move D5->A2");
+}
+
+MU_TEST(bishop_can_move_diagonal_q4) {
+    board[tile_name_to_index("D5")] = piece_new(WHITE, BISHOP);
+    int can_move = piece_can_move(
+        &board[tile_name_to_index("D5")], 
+        tile_name_to_index("F3"), 
+        board
+    );
+    mu_assert(can_move, "Bishop should be able to move D5->F3");
+}
+
+MU_TEST(bishop_cant_move_nondiagonal) {
+    board[tile_name_to_index("D5")] = piece_new(WHITE, BISHOP);
+    int can_move = piece_can_move(
+        &board[tile_name_to_index("D5")], 
+        tile_name_to_index("F4"), 
+        board
+    );
+    mu_assert(!can_move, "Bishop should NOT be able to move D5->F4");
+}
+
+MU_TEST(bishop_cant_move_over_piece) {
+    board[tile_name_to_index("D5")] = piece_new(WHITE, BISHOP);
+    board[tile_name_to_index("E4")] = piece_new(BLACK, KNIGHT);
+    int can_move = piece_can_move(
+        &board[tile_name_to_index("D5")], 
+        tile_name_to_index("F3"), 
+        board
+    );
+    mu_assert(!can_move, "Bishop should NOT be able to move D5->F3 with a knight on E4");
+}
+
+MU_TEST(bishop_cant_move_over_piece_attacking) {
+    board[tile_name_to_index("A1")] = piece_new(BLACK, BISHOP);
+    board[tile_name_to_index("H8")] = piece_new(WHITE, QUEEN);
+    board[tile_name_to_index("D4")] = piece_new(WHITE, PAWN);
+    int can_move = piece_can_move(
+        &board[tile_name_to_index("A1")], 
+        tile_name_to_index("H8"), 
+        board
+    );
+    mu_assert(!can_move, "Bishop should NOT be able to to move A1 -> H8 with a pawn on D4");
+}
+
+MU_TEST(bishop_can_move_taking_opposite_color) {
+    board[tile_name_to_index("A1")] = piece_new(BLACK, BISHOP);
+    board[tile_name_to_index("H8")] = piece_new(WHITE, QUEEN);
+    int can_move = piece_can_move(
+        &board[tile_name_to_index("A1")], 
+        tile_name_to_index("H8"), 
+        board
+    );
+    mu_assert(!can_move, "Bishop should be able to to move A1 -> H8");
+}
+
+MU_TEST(bishop_cant_move_to_own_square) {
+    board[tile_name_to_index("A1")] = piece_new(BLACK, BISHOP);
+    int can_move = piece_can_move(
+        &board[tile_name_to_index("A1")],
+        tile_name_to_index("A1"), 
+        board
+    );
+    mu_assert(!can_move, "Bishop should not be able to move A1->A1");
+}
+
 
 MU_TEST_SUITE(test_suite) {
     MU_SUITE_CONFIGURE(&test_setup, &test_teardown);
     MU_RUN_TEST(test_tile_name_to_indexA1);
     MU_RUN_TEST(test_tile_name_to_indexE4);
     MU_RUN_TEST(test_index_to_tile_nameD2);
+    MU_RUN_TEST(test_get_by_row_col);
 
     MU_RUN_TEST(test_white_pawn_move1turn1);
     MU_RUN_TEST(test_white_pawn_move2turn1);
@@ -156,6 +257,16 @@ MU_TEST_SUITE(test_suite) {
     MU_RUN_TEST(test_knight_move_over_pieces);
     MU_RUN_TEST(test_knight_move_over_pieces_attacking);
     MU_RUN_TEST(test_knight_move_over_pieces_attacking_wrong_color);
+
+    MU_RUN_TEST(bishop_can_move_diagonal_q1);
+    MU_RUN_TEST(bishop_can_move_diagonal_q2);
+    MU_RUN_TEST(bishop_can_move_diagonal_q3);
+    MU_RUN_TEST(bishop_can_move_diagonal_q4);
+    MU_RUN_TEST(bishop_cant_move_nondiagonal);
+    MU_RUN_TEST(bishop_cant_move_over_piece);
+    MU_RUN_TEST(bishop_cant_move_over_piece_attacking);
+    MU_RUN_TEST(bishop_can_move_taking_opposite_color);
+    MU_RUN_TEST(bishop_cant_move_to_own_square);
 }
 
 

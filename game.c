@@ -78,6 +78,10 @@ int get_piece_index(Piece ** piece, Board board) {
     return (int)(piece - board);
 }
 
+Piece * board_index_by_row_col(Board board, int row, int col) {
+    return board[row * 8 + col];
+}
+
 // can't be called with null
 // probably not gonna add en passant for a bit if at all
 int pawn_can_move(Piece * pawn, int current_index, int target_index, Board board) {
@@ -138,12 +142,30 @@ int bishop_can_move(Piece * bishop, int current_index, int target_index, Board b
     int target_row = (int)(target_index / ROW_SIZE);
     int target_col = target_index % COL_SIZE;
 
+
     int row_diff = target_row - current_row;
     int col_diff = target_col - current_col;
+
+    int horizontal_direction_modifier = col_diff > 0 ? 1 : -1;
+    int vertical_direction_modifier = row_diff > 0 ? 1 : -1;
 
     // not diagonal
     if (abs(row_diff) != abs(col_diff))
         return 0;
+    
+    int temp_row = current_row;
+    int temp_col = current_col;
+    while (temp_col != target_col && temp_row != target_col) {
+        temp_col = temp_col + 1 * horizontal_direction_modifier;
+        temp_row = temp_row + 1 * vertical_direction_modifier;
+        // location is not null, meaning a piece is already on a square the bishop is trying to cross
+        if (board_index_by_row_col(board, temp_row, temp_col)) {
+            return 0;
+        }
+    }
+    return board[target_index] == NULL || board[target_index]->color != bishop->color;
+}
+int rook_can_move(Piece * rook, int current_index, int target_index, Board board) {
 
 }
 
@@ -160,6 +182,7 @@ int piece_can_move(Piece ** piece, int target_index, Board board) {
     case KNIGHT:
         return knight_can_move(active_piece, current_index, target_index, board);
     case BISHOP:
+        return bishop_can_move(active_piece, current_index, target_index, board);
     case ROOK:
     case QUEEN:
     case KING:
