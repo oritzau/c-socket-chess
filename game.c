@@ -17,6 +17,14 @@ Piece * piece_new(PieceColor color, PieceKind kind) {
     return piece;
 }
 
+Piece piece_copy(Piece *piece) {
+    Piece p;
+    p.kind = piece->kind;
+    p.has_moved = piece->has_moved;
+    p.color = piece->color;
+    return p;
+}
+
 void print_char(char c) {
     printf("%3c", c);
 }
@@ -155,7 +163,7 @@ int bishop_can_move(Piece * bishop, int current_index, int target_index, Board b
     
     int temp_row = current_row;
     int temp_col = current_col;
-    while (temp_col != target_col && temp_row != target_col) {
+    while (temp_col != target_col && temp_row != target_row) {
         temp_col = temp_col + 1 * horizontal_direction_modifier;
         temp_row = temp_row + 1 * vertical_direction_modifier;
         // location is not null, meaning a piece is already on a square the bishop is trying to cross
@@ -166,7 +174,63 @@ int bishop_can_move(Piece * bishop, int current_index, int target_index, Board b
     return board[target_index] == NULL || board[target_index]->color != bishop->color;
 }
 int rook_can_move(Piece * rook, int current_index, int target_index, Board board) {
+    if (target_index == current_index)
+        return 0;
+    int current_row = (int)(current_index / ROW_SIZE);
+    int current_col = current_index % COL_SIZE;
+    int target_row = (int)(target_index / ROW_SIZE);
+    int target_col = target_index % COL_SIZE;
 
+    int row_diff = target_row - current_row;
+    int col_diff = target_col - current_col;
+
+    int moving_horizontal = abs(col_diff) ? 1 : 0;
+    int moving_vertical = abs(row_diff) ? 1: 0;
+
+    int horizontal_direction_modifier = col_diff > 0 ? 1 : -1;
+    int vertical_direction_modifier = row_diff > 0 ? 1 : -1;
+
+    // not moving strictly vertically or strictly horizontal
+    if (moving_vertical && moving_horizontal) 
+        return 0;
+    int temp_row = current_row;
+    int temp_col = current_col;
+    while (temp_col != target_col || temp_row != target_row) {
+        if (moving_vertical) {
+            temp_row += 1 * vertical_direction_modifier;
+        } else {
+            temp_col += 1 * horizontal_direction_modifier;
+        }
+        if (board_index_by_row_col(board, temp_row, temp_col))
+            return 0;
+    }
+    return board[target_index] == NULL || board[target_index]->color != rook->color;;
+}
+
+int queen_can_move(Piece * queen, int current_index, int target_index, Board board) {
+
+    queen->kind = ROOK;
+    int rook_can_move = piece_can_move(&board[current_index], target_index, board);
+    queen->kind = BISHOP;
+    int bishop_can_move = piece_can_move(&board[current_index], target_index, board);
+    queen->kind = QUEEN;
+    return rook_can_move || bishop_can_move;
+}
+
+int king_can_move(Piece * king, int current_index, int target_index, Board board) {
+    int current_row = (int)(current_index / ROW_SIZE);
+    int current_col = current_index % COL_SIZE;
+    int target_row = (int)(target_index / ROW_SIZE);
+    int target_col = target_index % COL_SIZE;
+
+    int row_diff = target_row - current_row;
+    int col_diff = target_col - current_col;
+
+    int valid_horizontal = (row_diff == 0 && abs(col_diff) == 1);
+    int valid_vertical = (abs(row_diff) == 1 && col_diff == 0);
+    int valid_diagonal = (abs(row_diff) == 1 && abs(col_diff) == 1);
+
+    return (valid_vertical || valid_horizontal || valid_diagonal) && (board[target_index] == NULL || board[target_index]->color != king->color); 
 }
 
 // only checks for physically able, meaning accounts for piece
@@ -184,8 +248,11 @@ int piece_can_move(Piece ** piece, int target_index, Board board) {
     case BISHOP:
         return bishop_can_move(active_piece, current_index, target_index, board);
     case ROOK:
+        return rook_can_move(active_piece, current_index, target_index, board);
     case QUEEN:
+        return queen_can_move(active_piece, current_index, target_index, board);
     case KING:
-        return 0;
+        return king_can_move(active_piece, current_index, target_index, board);
     }
+    return 0;
 }

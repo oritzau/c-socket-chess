@@ -36,6 +36,7 @@ typedef struct Move {
 Board board_new();
 Piece * piece_new(PieceColor color, PieceKind kind);
 Move move_new(Piece * piece, unsigned char target_index, Board board);
+Piece piece_copy(Piece * piece);
 
 void board_print(Board board);
 Piece * board_index_by_row_col(Board board, int row, int col);

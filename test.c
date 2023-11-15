@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "game.h"
@@ -238,6 +239,77 @@ MU_TEST(bishop_cant_move_to_own_square) {
     mu_assert(!can_move, "Bishop should not be able to move A1->A1");
 }
 
+MU_TEST(rook_can_move_horizontal) {
+    board[tile_name_to_index("B2")] = piece_new(WHITE, ROOK);
+    int can_move = piece_can_move(
+        &board[tile_name_to_index("B2")], 
+        tile_name_to_index("G2"),
+        board
+    );
+    mu_assert(can_move, "Rook should be able to move B2->G2");
+}
+
+MU_TEST(rook_can_move_vertical) {
+    board[tile_name_to_index("B2")] = piece_new(WHITE, ROOK);
+    int can_move = piece_can_move(
+        &board[tile_name_to_index("B2")], 
+        tile_name_to_index("B6"),
+        board
+    );
+    mu_assert(can_move, "Rook should be able to move B2->B6");
+}
+
+MU_TEST(rook_cant_move_diagonal) {
+    board[tile_name_to_index("B2")] = piece_new(WHITE, ROOK);
+    int can_move = piece_can_move(
+        &board[tile_name_to_index("B2")], 
+        tile_name_to_index("D4"),
+        board
+    );
+    mu_assert(!can_move, "Rook should NOT be able to move B2->D4");
+}
+
+MU_TEST(rook_cant_move_over_piece_vertical) {
+    board[tile_name_to_index("B2")] = piece_new(WHITE, ROOK);
+    board[tile_name_to_index("B4")] = piece_new(WHITE, PAWN);
+    int can_move = piece_can_move(
+        &board[tile_name_to_index("B2")], 
+        tile_name_to_index("B6"),
+        board
+    );
+    mu_assert(!can_move, "Rook should NOT be able to move B2->B6 with a pawn on B4");
+}
+
+MU_TEST(rook_cant_move_over_piece_horizontal) {
+    board[tile_name_to_index("B2")] = piece_new(WHITE, ROOK);
+    board[tile_name_to_index("G2")] = piece_new(WHITE, PAWN);
+    int can_move = piece_can_move(
+        &board[tile_name_to_index("B2")], 
+        tile_name_to_index("H2"),
+        board
+    );
+    mu_assert(!can_move, "Rook should NOT be able to move B2->H2 with a pawn on G2");
+}
+
+MU_TEST(queen_can_move_diagonal_q3) {
+    board[tile_name_to_index("D5")] = piece_new(WHITE, QUEEN);
+    int can_move = piece_can_move(
+        &board[tile_name_to_index("D5")], 
+        tile_name_to_index("A2"), 
+        board
+    );
+    mu_assert(can_move, "Queen should be able to move D5->A2");
+}
+
+MU_TEST(queen_can_move_doesnt_change_board) {
+    board[tile_name_to_index("A2")] = piece_new(WHITE, QUEEN);
+    piece_can_move(
+        &board[tile_name_to_index("A2")], 
+        tile_name_to_index("A4"), 
+        board
+    );
+    mu_assert(board[tile_name_to_index("A2")]->kind == QUEEN, "Testing if a queen can move should not change the value on the queen's square");
+}
 
 MU_TEST_SUITE(test_suite) {
     MU_SUITE_CONFIGURE(&test_setup, &test_teardown);
@@ -267,6 +339,15 @@ MU_TEST_SUITE(test_suite) {
     MU_RUN_TEST(bishop_cant_move_over_piece_attacking);
     MU_RUN_TEST(bishop_can_move_taking_opposite_color);
     MU_RUN_TEST(bishop_cant_move_to_own_square);
+
+    MU_RUN_TEST(rook_can_move_horizontal);
+    MU_RUN_TEST(rook_can_move_vertical);
+    MU_RUN_TEST(rook_cant_move_diagonal);
+    MU_RUN_TEST(rook_cant_move_over_piece_vertical);
+    MU_RUN_TEST(rook_cant_move_over_piece_horizontal);
+
+    MU_RUN_TEST(queen_can_move_diagonal_q3);
+    MU_RUN_TEST(queen_can_move_doesnt_change_board);
 }
 
 
