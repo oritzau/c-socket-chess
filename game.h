@@ -28,8 +28,8 @@ typedef struct Piece {
 typedef struct Piece ** Board; 
 
 typedef struct Move {
-    Piece * piece;
-    unsigned char target_index;
+    int active_index;
+    int target_index;
     Board board;
 } Move;
 
@@ -46,4 +46,8 @@ int get_piece_index(Piece ** piece, Board board);
 
 int piece_can_move(Piece ** piece, int target_index, Board board);
 
-int move_is_valid(Move move);
+int move_is_valid(Move *move);
+
+char * format_raw_input(char *input);
+
+Move * parse_player_intent(char *formatted_input);

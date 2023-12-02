@@ -311,6 +311,11 @@ MU_TEST(queen_can_move_doesnt_change_board) {
     mu_assert(board[tile_name_to_index("A2")]->kind == QUEEN, "Testing if a queen can move should not change the value on the queen's square");
 }
 
+MU_TEST(format_raw_input_trims_whitespace) {
+    char *format = format_raw_input(" \n  17 \n  ");
+    mu_assert_string_eq("17", format);
+}
+
 MU_TEST_SUITE(test_suite) {
     MU_SUITE_CONFIGURE(&test_setup, &test_teardown);
     MU_RUN_TEST(test_tile_name_to_indexA1);
@@ -348,6 +353,8 @@ MU_TEST_SUITE(test_suite) {
 
     MU_RUN_TEST(queen_can_move_diagonal_q3);
     MU_RUN_TEST(queen_can_move_doesnt_change_board);
+
+    MU_RUN_TEST(format_raw_input_trims_whitespace);
 }
 
 

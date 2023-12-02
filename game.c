@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <string.h>
+#include <ctype.h>
 
 Board board_new() {
     Board board = calloc(BOARD_SIZE, sizeof(Piece *));
